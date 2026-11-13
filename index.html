@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Starile Dariei</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;700;900&display=swap');
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --pink:#ff4fa3;--purple:#7b2fff;--yellow:#ffe600;
+      --orange:#ff7700;--teal:#00e5cc;--red:#ff2244;--rose:#ff6eb4;
+    }
+    html,body{width:100%;height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background:#0d0d1a}
+
+    /* STARFIELD */
+    #stars{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+    .star{position:absolute;border-radius:50%;background:white;opacity:0;animation:twinkle var(--d,3s) infinite alternate}
+    @keyframes twinkle{from{opacity:0}to{opacity:var(--o,.8)}}
+
+    /* SLIDES */
+    .slide{position:fixed;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;opacity:0;pointer-events:none}
+    .slide.active{pointer-events:all;opacity:1}
+
+    /* DOTS */
+    #dots{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:100}
+    .dot{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.3);border:2px solid rgba(255,255,255,.5);transition:background .3s,transform .3s;cursor:pointer}
+    .dot.on{background:white;transform:scale(1.4)}
+
+    /* TIMER */
+    #timer-bar{position:fixed;top:0;left:0;height:4px;background:linear-gradient(90deg,var(--pink),var(--teal));z-index:200;transition:width .35s}
+
+    /* TOAST */
+    #toast{position:fixed;bottom:60px;left:50%;transform:translateX(-50%) translateY(80px);background:rgba(20,5,40,.95);border:1px solid var(--pink);border-radius:12px;padding:10px 24px;color:#fff;font-size:1rem;z-index:300;transition:transform .4s,opacity .4s;opacity:0;pointer-events:none;white-space:nowrap}
+    #toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+    /* EMOJI RAIN */
+    .emoji-rain{position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden}
+    .emoji-drop{position:absolute;top:-60px;font-size:2rem;animation:fall linear forwards;user-select:none}
+    @keyframes fall{to{transform:translateY(110vh) rotate(360deg);opacity:0}}
+
+    /* CONFETTI */
+    .confetti-piece{position:fixed;top:-20px;animation:cfFall linear forwards;z-index:50;pointer-events:none}
+    @keyframes cfFall{0%{transform:translateY(0) rotateZ(0);opacity:1}100%{transform:translateY(110vh) rotateZ(720deg);opacity:0}}
+
+    /* BUTTONS */
+    .btn{position:relative;overflow:hidden;border:none;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:900;font-size:1.1rem;border-radius:50px;padding:14px 36px;letter-spacing:1px;text-transform:uppercase;transition:transform .15s,box-shadow .15s;outline:none;user-select:none}
+    .btn:hover{transform:scale(1.08)}.btn:active{transform:scale(0.95)}
+    .btn .ripple{position:absolute;border-radius:50%;transform:scale(0);animation:rippleAnim .6s linear;background:rgba(255,255,255,.4);pointer-events:none}
+    @keyframes rippleAnim{to{transform:scale(4);opacity:0}}
+    .btn-primary  {background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;box-shadow:0 6px 24px rgba(255,79,163,.5)}
+    .btn-secondary{background:linear-gradient(135deg,var(--teal),#0066ff);color:#fff;box-shadow:0 6px 24px rgba(0,229,204,.4)}
+    .btn-warn     {background:linear-gradient(135deg,var(--yellow),var(--orange));color:#0d0d1a;box-shadow:0 6px 24px rgba(255,230,0,.5)}
+    .btn-danger   {background:linear-gradient(135deg,var(--red),var(--orange));color:#fff;box-shadow:0 6px 24px rgba(255,34,68,.5)}
+    .btn-rose     {background:linear-gradient(135deg,var(--rose),#c2185b);color:#fff;box-shadow:0 6px 24px rgba(255,110,180,.5)}
+
+    /* BUTTON POP ANIMATIONS */
+    @keyframes jello{0%,100%{transform:scale(1) rotate(0)}15%{transform:scale(1.25,.75) rotate(-3deg)}30%{transform:scale(.75,1.25) rotate(3deg)}45%{transform:scale(1.15,.85) rotate(-2deg)}60%{transform:scale(.95,1.05) rotate(1deg)}75%{transform:scale(1.05,.95) rotate(-1deg)}}
+    @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px) rotate(-3deg)}40%{transform:translateX(10px) rotate(3deg)}60%{transform:translateX(-8px) rotate(-2deg)}80%{transform:translateX(8px) rotate(2deg)}}
+    @keyframes spin360{to{transform:rotate(360deg)}}
+    @keyframes bounce{0%,100%{transform:translateY(0)}30%{transform:translateY(-40px)}60%{transform:translateY(-20px)}}
+    @keyframes burstSpin{0%{transform:scale(.5) rotate(-20deg)}60%{transform:scale(1.3) rotate(10deg)}100%{transform:scale(1) rotate(0)}}
+    .anim-jello {animation:jello .8s}
+    .anim-shake {animation:shake .6s}
+    .anim-spin  {animation:spin360 .5s linear}
+    .anim-bounce{animation:bounce .6s}
+    .anim-burst {animation:burstSpin .4s ease-out}
+
+    /* FLYING EMOJI */
+    .flying{position:fixed;font-size:2rem;pointer-events:none;z-index:999;animation:flyUp 1.2s ease-out forwards}
+    @keyframes flyUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-200px) scale(1.8)}}
+
+    /* SLIDE BACKGROUNDS */
+    #slide-0{background:radial-gradient(ellipse at center,     #1a0535 0%,#0d0d1a 70%)}
+    #slide-1{background:radial-gradient(ellipse at top,        #3d0060 0%,#0d0d1a 70%)}
+    #slide-2{background:radial-gradient(ellipse at top left,   #3d001a 0%,#0d0d1a 70%)}
+    #slide-3{background:radial-gradient(ellipse at bottom right,#002b55 0%,#0d0d1a 70%)}
+    #slide-4{background:radial-gradient(ellipse at top right,  #3d1500 0%,#0d0d1a 70%)}
+    #slide-5{background:radial-gradient(ellipse at bottom left, #002800 0%,#0d0d1a 70%)}
+    #slide-6{background:radial-gradient(ellipse at center,     #1a0535 0%,#0d0d1a 70%)}
+
+    /* INTRO */
+    .main-title{font-family:'Bangers',cursive;font-size:clamp(3rem,10vw,7rem);letter-spacing:4px;line-height:1.1;background:linear-gradient(135deg,var(--pink),var(--yellow),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:titlePulse 2s ease-in-out infinite alternate}
+    @keyframes titlePulse{from{filter:drop-shadow(0 0 10px var(--pink))}to{filter:drop-shadow(0 0 30px var(--teal))}}
+    .subtitle{color:rgba(255,255,255,.7);font-size:1.2rem;margin:16px 0 36px;font-style:italic}
+    .floating-emoji{position:absolute;font-size:2.5rem;animation:floatEmoji 4s ease-in-out infinite alternate;user-select:none;pointer-events:none}
+    @keyframes floatEmoji{from{transform:translateY(0) rotate(-10deg)}to{transform:translateY(-30px) rotate(10deg)}}
+
+    /* SLIDE ELEMENTS */
+    .state-badge{display:inline-block;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.3);border-radius:50px;padding:4px 16px;font-size:.85rem;color:rgba(255,255,255,.6);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase}
+    .slide-emoji{font-size:clamp(2.5rem,6vw,4rem);margin-bottom:8px}
+    .slide-title{font-family:'Bangers',cursive;font-size:clamp(2rem,7vw,4.5rem);letter-spacing:2px;color:#fff;text-shadow:3px 3px 0 rgba(0,0,0,.4);margin-bottom:10px}
+    .slide-desc{color:rgba(255,255,255,.85);font-size:clamp(.95rem,2.5vw,1.3rem);max-width:600px;margin:0 auto 10px;line-height:1.5}
+    .slide-quote{background:rgba(255,255,255,.1);border-left:4px solid var(--pink);border-radius:12px;padding:10px 20px;font-size:clamp(.85rem,2vw,1.05rem);color:rgba(255,255,255,.7);max-width:500px;margin:8px auto;font-style:italic}
+    .slide-img{border-radius:20px;max-width:min(260px,40vw);max-height:200px;object-fit:contain;margin:10px auto;filter:drop-shadow(0 8px 24px rgba(0,0,0,.5));animation:imgFloat 3s ease-in-out infinite alternate}
+    @keyframes imgFloat{from{transform:translateY(0) rotate(-2deg)}to{transform:translateY(-12px) rotate(2deg)}}
+    .btn-row{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:18px}
+
+    /* FINAL SLIDE */
+    .final-title{font-family:'Bangers',cursive;font-size:clamp(2.5rem,8vw,5rem);letter-spacing:3px;background:linear-gradient(135deg,var(--yellow),var(--pink),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:titlePulse 2s ease-in-out infinite alternate;margin-bottom:16px}
+    .final-pics{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;align-items:flex-end;margin:10px 0 20px}
+    .final-pics img{border-radius:16px;object-fit:contain;filter:drop-shadow(0 8px 20px rgba(255,79,163,.4));border:3px solid rgba(255,255,255,.15);transition:transform .3s}
+    .final-pics img:hover{transform:scale(1.08) rotate(2deg)}
+    .final-pics img:nth-child(1){max-height:200px;max-width:160px;animation:imgFloat 3s   ease-in-out infinite alternate}
+    .final-pics img:nth-child(2){max-height:170px;max-width:220px;animation:imgFloat 3.5s .5s ease-in-out infinite alternate}
+    .final-pics img:nth-child(3){max-height:200px;max-width:160px;animation:imgFloat 2.8s 1s  ease-in-out infinite alternate}
+  </style>
+</head>
+<body>
+
+<div id="stars"></div>
+<div id="timer-bar"></div>
+<div id="toast"></div>
+<div class="emoji-rain" id="emoji-rain"></div>
+
+<!-- SLIDE 0 - START -->
+<div class="slide active" id="slide-0">
+  <span class="floating-emoji" style="top:8%;left:5%;animation-delay:0s">&#128148;</span>
+  <span class="floating-emoji" style="top:12%;right:8%;animation-delay:.5s">&#127917;</span>
+  <span class="floating-emoji" style="bottom:15%;left:7%;animation-delay:1s">&#128548;</span>
+  <span class="floating-emoji" style="bottom:12%;right:6%;animation-delay:1.5s">&#127754;</span>
+  <div class="main-title">Starile<br>Dariei</div>
+  <div class="subtitle">Un ghid complet al haosului emotional &#127914;</div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="goTo(1,'left',this);launchEmojis(['&#128152;','&#10024;','&#128514;']);showToast('Pregateste-te... &#128064;')">
+      Incepe aventura! &#128640;
+    </button>
+  </div>
+</div>
+
+<!-- SLIDE 1 - VREAU UN BAIAT -->
+<div class="slide" id="slide-1">
+  <div class="state-badge">Starea #1</div>
+  <div class="slide-emoji">&#128525;&#128152;&#129718;</div>
+  <div class="slide-title" style="color:var(--pink)">Fie... vreau un baiat!</div>
+  <img src="daria1.webp" class="slide-img" alt="Daria"/>
+  <div class="slide-desc">
+    <strong>BRUSC</strong> toti baietii sunt frumosi, destepti si perfecti...<br>
+    pana te urmaresc inapoi pe Instagram. &#128128;
+  </div>
+  <div class="slide-quote">
+    "El nici nu stie ca exist, dar noi suntem suflete pereche."<br>
+    -- Daria, probabil, la 2 noaptea
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo(0,'right',this)">&#8592; Inapoi</button>
+    <button class="btn btn-rose" onclick="goTo(2,'left',this);launchEmojis(['&#127800;','&#128133;','&#128527;']);showToast('Varianta 2.0! &#128129;')">
+      Starea #2 &#8594;
+    </button>
+  </div>
+</div>
+
+<!-- SLIDE 2 - VREAU O FATA -->
+<div class="slide" id="slide-2">
+  <div class="state-badge">Starea #2</div>
+  <div class="slide-emoji">&#127800;&#128133;&#128527;</div>
+  <div class="slide-title" style="color:var(--rose)">Fie... vreau o fata!</div>
+  <img src="daria3.webp" class="slide-img" alt="Daria buna mai"/>
+  <div class="slide-desc">
+    <strong>Exact</strong> ca starea #1, dar cu mai mult lip gloss<br>
+    si mai mult "buna mai" aruncat la intamplare. &#128139;
+  </div>
+  <div class="slide-quote">
+    "Fetele ma inteleg mai bine oricum."<br>
+    -- aceeasi persoana care a certat toate fetele din grupa &#128514;
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo(1,'right',this)">&#8592; Inapoi</button>
+    <button class="btn btn-primary" onclick="goTo(3,'left',this);launchEmojis(['&#128581;','&#128081;','&#10052;']);showToast('Nu vrea pe nimeni! &#128548;')">
+      Starea #3 &#8594;
+    </button>
+  </div>
+</div>
+
+<!-- SLIDE 3 - NU VREAU PE NIMENI -->
+<div class="slide" id="slide-3">
+  <div class="state-badge">Starea #3</div>
+  <div class="slide-emoji">&#128581;&#128081;&#10052;</div>
+  <div class="slide-title" style="color:var(--teal)">Fie... nu vreau pe nimeni!</div>
+  <img src="daria2.webp" class="slide-img" style="max-height:160px;max-width:260px" alt="Baie Daria"/>
+  <div class="slide-desc">
+    <strong>Independenta! Libera! Puternica!</strong><br>
+    (Si totusi baia arata ca o farmacie explodata. &#128138;)
+  </div>
+  <div class="slide-quote">
+    "NU am nevoie de nimeni."<br>
+    -- aceeasi persoana cu 11 produse de par cumparate saptamana asta
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo(2,'right',this)">&#8592; Inapoi</button>
+    <button class="btn btn-warn" onclick="goTo(4,'left',this);launchEmojis(['&#128557;','&#128145;','&#128161;']);showToast('Episodul urmator... &#127871;')">
+      Starea #4 &#8594;
+    </button>
+  </div>
+</div>
+
+<!-- SLIDE 4 - TOATA LUMEA ARE RELATII -->
+<div class="slide" id="slide-4">
+  <div class="state-badge">Starea #4</div>
+  <div class="slide-emoji">&#128557;&#128145;&#128161;</div>
+  <div class="slide-title" style="color:var(--yellow)">Fie... toata lumea<br>altcineva are relatii!</div>
+  <div class="slide-desc" style="margin-top:8px">
+    <strong>DE CE??</strong> Chiar si cainele vecinului are prietena.<br>
+    Chiar si broscuta aia de pe TikTok e cuplate.<br>
+    CHIAR SI EA. &#128548;
+  </div>
+  <div class="slide-quote">
+    "Toti in cupluri, eu cu telefonu'...<br>
+    macar el nu ma dezamageste."<br>
+    -- Daria la scroll 23:47
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo(3,'right',this)">&#8592; Inapoi</button>
+    <button class="btn btn-danger" onclick="goTo(5,'left',this);launchEmojis(['&#129314;','&#128141;','&#128683;']);showToast('180 de grade! &#128260;')">
+      Starea #5 &#8594;
+    </button>
+  </div>
+</div>
+
+<!-- SLIDE 5 - RELATIILE SUNT DEZGUSTATOARE -->
+<div class="slide" id="slide-5">
+  <div class="state-badge">Starea #5</div>
+  <div class="slide-emoji">&#129314;&#128683;&#128141;</div>
+  <div class="slide-title" style="color:var(--orange)">Fie... relatiile<br>sunt dezgustatoare!</div>
+  <img src="daria1.webp" class="slide-img" alt="Daria"/>
+  <div class="slide-desc">
+    Cuplurile care se pupa in public = <strong>crima impotriva umanitatii.</strong><br>
+    "Bleah. Scarbosi. Dus." &#129326;
+  </div>
+  <div class="slide-quote">
+    "NU inteleg cum cineva poate fi atat de dependent de altcineva."<br>
+    -- aceeasi Daria de la slide-urile #1 si #2 &#128514;
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo(4,'right',this)">&#8592; Inapoi</button>
+    <button class="btn btn-primary" onclick="goTo(6,'left',this);launchConfetti();launchEmojis(['&#127881;','&#128150;','&#128557;','&#127942;']);showToast('GRAND FINALE! &#127882;')">
+      Concluzia &#8594; &#127882;
+    </button>
+  </div>
+</div>
+
+<!-- SLIDE 6 - FINAL -->
+<div class="slide" id="slide-6">
+  <div class="final-title">Iar asta este Daria! &#127917;</div>
+  <div class="final-pics">
+    <img src="daria1.webp" alt="Daria 1"/>
+    <img src="daria2.webp" alt="Daria 2"/>
+    <img src="daria3.webp" alt="Daria 3"/>
+  </div>
+  <div class="slide-desc" style="font-size:clamp(.9rem,2vw,1.1rem);margin-bottom:4px">
+    <strong style="color:var(--pink)">Rezumat oficial:</strong>
+    Vrea un baiat. Vrea o fata. Nu vrea pe nimeni.<br>
+    De ce toti au relatii?! Relatiile sunt scarboase.<br>
+    <span style="color:var(--yellow);font-size:1.2em">...si ciclul se repeta. &#128260;</span>
+  </div>
+  <div class="slide-quote" style="border-color:var(--yellow)">
+    "Sunt bine. Sunt ok. Sunt independenta."<br>
+    -- Daria, in toate cele 5 stari simultan, probabil &#127914;
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo(5,'right',this)">&#8592; Inapoi</button>
+    <button class="btn btn-warn" onclick="triggerRandomAnim(this);launchConfetti();launchEmojis(['&#127881;','&#128150;','&#128514;','&#128128;','&#10084;']);showToast('La multi ani Daria! &#129395;')">
+      &#127881; La multi ani!
+    </button>
+    <button class="btn btn-primary" onclick="goTo(0,'right',this);showToast('De la capat? Clasic Daria &#128260;')">
+      &#128260; De la capat
+    </button>
+  </div>
+</div>
+
+<!-- DOTS -->
+<div id="dots">
+  <div class="dot on" onclick="goTo(0,'right')"></div>
+  <div class="dot"    onclick="goTo(1,'left')"></div>
+  <div class="dot"    onclick="goTo(2,'left')"></div>
+  <div class="dot"    onclick="goTo(3,'left')"></div>
+  <div class="dot"    onclick="goTo(4,'left')"></div>
+  <div class="dot"    onclick="goTo(5,'left')"></div>
+  <div class="dot"    onclick="goTo(6,'left')"></div>
+</div>
+
+<script>
+/* STARFIELD */
+(function(){
+  var s = document.getElementById('stars');
+  for(var i = 0; i < 120; i++){
+    var el = document.createElement('div');
+    el.className = 'star';
+    var sz = Math.random()*3+1;
+    el.style.cssText = 'width:'+sz+'px;height:'+sz+'px;top:'+Math.random()*100+'%;left:'+Math.random()*100+'%;--d:'+(Math.random()*4+1).toFixed(1)+'s;--o:'+(Math.random()*.6+.2).toFixed(2)+';animation-delay:'+(Math.random()*5).toFixed(1)+'s';
+    s.appendChild(el);
+  }
+})();
+
+/* SLIDE ENGINE */
+var TOTAL = 7, current = 0, busy = false;
+document.getElementById('slide-0').style.opacity = '1';
+
+function goTo(next, dir, btn) {
+  if(busy || next === current || next < 0 || next >= TOTAL) return;
+  busy = true;
+  if(btn) triggerRandomAnim(btn);
+
+  var cur = document.getElementById('slide-' + current);
+  var nxt = document.getElementById('slide-' + next);
+  var DUR = 380;
+
+  /* slide current OUT */
+  cur.style.transition = 'opacity '+DUR+'ms ease, transform '+DUR+'ms ease';
+  cur.style.opacity    = '0';
+  cur.style.transform  = dir === 'left' ? 'translateX(-90px) scale(.95)' : 'translateX(90px) scale(.95)';
+
+  /* position next off-screen instantly */
+  nxt.style.transition = 'none';
+  nxt.style.opacity    = '0';
+  nxt.style.transform  = dir === 'left' ? 'translateX(90px) scale(.95)' : 'translateX(-90px) scale(.95)';
+  nxt.classList.add('active');
+
+  /* slide next IN after two rAF so transition:none takes effect first */
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      nxt.style.transition = 'opacity '+DUR+'ms ease, transform '+DUR+'ms ease';
+      nxt.style.opacity    = '1';
+      nxt.style.transform  = 'translateX(0) scale(1)';
+    });
+  });
+
+  /* cleanup */
+  setTimeout(function(){
+    cur.classList.remove('active');
+    cur.style.transition = ''; cur.style.opacity = ''; cur.style.transform = '';
+    nxt.style.transition = ''; nxt.style.opacity = ''; nxt.style.transform = '';
+    busy = false;
+  }, DUR + 60);
+
+  current = next;
+  updateDots();
+  updateTimer();
+}
+
+function updateDots(){
+  document.querySelectorAll('.dot').forEach(function(d,i){ d.classList.toggle('on', i === current); });
+}
+function updateTimer(){
+  document.getElementById('timer-bar').style.width = (current/(TOTAL-1)*100) + '%';
+}
+
+/* RIPPLE */
+document.querySelectorAll('.btn').forEach(function(btn){
+  btn.addEventListener('click', function(e){
+    var r = document.createElement('span'); r.className = 'ripple';
+    var rect = btn.getBoundingClientRect();
+    var sz = Math.max(rect.width, rect.height);
+    r.style.cssText = 'width:'+sz+'px;height:'+sz+'px;left:'+(e.clientX-rect.left-sz/2)+'px;top:'+(e.clientY-rect.top-sz/2)+'px';
+    btn.appendChild(r); setTimeout(function(){ r.remove(); }, 700);
+  });
+});
+
+/* BUTTON ANIMATIONS */
+var animList = ['anim-jello','anim-shake','anim-spin','anim-bounce','anim-burst'];
+function triggerRandomAnim(el){
+  animList.forEach(function(c){ el.classList.remove(c); });
+  var cls = animList[Math.floor(Math.random()*animList.length)];
+  void el.offsetWidth;
+  el.classList.add(cls);
+  setTimeout(function(){ el.classList.remove(cls); }, 900);
+  var picks = ['&#128165;','&#10024;','&#128293;','&#128171;','&#9889;','&#127775;','&#128514;','&#128128;'];
+  spawnFly(picks[Math.floor(Math.random()*picks.length)], el);
+}
+
+function spawnFly(emoji, fromEl){
+  var rect = fromEl ? fromEl.getBoundingClientRect() : {left:innerWidth/2, top:innerHeight/2, width:0};
+  var el = document.createElement('div');
+  el.className = 'flying';
+  el.innerHTML = emoji;
+  el.style.left = (rect.left + rect.width/2 - 16) + 'px';
+  el.style.top  = (rect.top - 10) + 'px';
+  document.body.appendChild(el);
+  setTimeout(function(){ el.remove(); }, 1300);
+}
+
+/* EMOJI RAIN */
+function launchEmojis(list){
+  var c = document.getElementById('emoji-rain');
+  for(var i = 0; i < 18; i++){
+    var em = document.createElement('div');
+    em.className = 'emoji-drop';
+    em.innerHTML = list[Math.floor(Math.random()*list.length)];
+    em.style.left = Math.random()*100 + '%';
+    em.style.fontSize = (Math.random()*1.5+1.5) + 'rem';
+    em.style.animationDuration = (Math.random()*1.5+1).toFixed(1) + 's';
+    em.style.animationDelay    = (Math.random()*.6).toFixed(2) + 's';
+    c.appendChild(em);
+    setTimeout(function(){ em.remove(); }, 2500);
+  }
+}
+
+/* CONFETTI */
+function launchConfetti(){
+  var cols = ['#ff4fa3','#7b2fff','#ffe600','#ff7700','#00e5cc','#ff2244','#fff','#ff6eb4'];
+  for(var i = 0; i < 70; i++){
+    var c = document.createElement('div'); c.className = 'confetti-piece';
+    var sz = Math.random()*8+6;
+    c.style.cssText = 'left:'+Math.random()*100+'%;background:'+cols[Math.floor(Math.random()*cols.length)]+';width:'+sz+'px;height:'+sz+'px;border-radius:'+(Math.random()>.5?'50%':'2px')+';animation-duration:'+(Math.random()*2+1.5).toFixed(1)+'s;animation-delay:'+(Math.random()*.8).toFixed(2)+'s';
+    document.body.appendChild(c);
+    setTimeout(function(){ c.remove(); }, 3500);
+  }
+}
+
+/* TOAST */
+var toastT;
+function showToast(msg){
+  var t = document.getElementById('toast');
+  t.innerHTML = msg; t.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(function(){ t.classList.remove('show'); }, 2200);
+}
+
+/* KEYBOARD */
+document.addEventListener('keydown', function(e){
+  if(e.key === 'ArrowRight' || e.key === ' ') goTo(Math.min(current+1,TOTAL-1), 'left');
+  if(e.key === 'ArrowLeft')                   goTo(Math.max(current-1,0), 'right');
+});
+
+/* SWIPE */
+var tx = null;
+document.addEventListener('touchstart', function(e){ tx = e.touches[0].clientX; });
+document.addEventListener('touchend',   function(e){
+  if(tx === null) return;
+  var dx = e.changedTouches[0].clientX - tx;
+  if(Math.abs(dx) > 50) dx < 0 ? goTo(Math.min(current+1,TOTAL-1),'left') : goTo(Math.max(current-1,0),'right');
+  tx = null;
+});
+
+/* IDLE EMOJI BURSTS */
+var idle = [['&#128514;','&#128128;','&#128557;'],['&#10024;','&#128293;','&#128171;'],['&#129300;','&#128173;','&#10067;'],['&#128548;','&#128081;','&#128170;']];
+setInterval(function(){
+  if(Math.random() > .5) launchEmojis(idle[Math.floor(Math.random()*idle.length)]);
+}, 8000);
+
+updateTimer();
+</script>
+</body>
+</html>
+
+
